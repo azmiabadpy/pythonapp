@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask App with Frontend</title>
+    <style>
+        /* Add your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        input {
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .users {
+            margin-top: 30px;
+        }
+        .user {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Flask App with Frontend</h2>
+        <form id="addForm">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+            <button type="submit">Add Data</button>
+        </form>
+
+        <div class="users">
+            <h3>Users</h3>
+            <div id="usersList">
+                <!-- Users will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to fetch users from the API and display them
+        async function fetchUsers() {
+            try {
+                const response = await fetch('/api/users');
+                const data = await response.json();
+
+                if (response.ok) {
+                    const usersListElement = document.getElementById('usersList');
+                    usersListElement.innerHTML = '';
+
+                    data.users.forEach(user => {
+                        const userElement = document.createElement('div');
+                        userElement.classList.add('user');
+                        userElement.innerHTML = `<strong>Name:</strong> ${user.name}, <strong>Email:</strong> ${user.email}`;
+                        usersListElement.appendChild(userElement);
+                    });
+                } else {
+                    console.error('Failed to fetch users:', data.error || response.statusText);
+                }
+            } catch (error) {
+                console.error('Error fetching users:', error);
+            }
+        }
+
+        // Function to handle form submission
+        document.getElementById('addForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(this);
+            try {
+                const response = await fetch('/submit', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    console.log('Data submitted successfully');
+                    fetchUsers(); // Refresh user list on successful submission
+                } else {
+                    const data = await response.json();
+                    console.error('Failed to submit data:', data.error || response.statusText);
+                }
+            } catch (error) {
+                console.error('Error submitting data:', error);
+            }
+        });
+
+        // Initial fetch of users when the page loads
+        fetchUsers();
+    </script>
+</body>
+</html>
+
